@@ -21,4 +21,10 @@ activator run
 
 # Deploy on Openshift
 
-TODO
+Create an application with cartridge http://cartreflect-claytondev.rhcloud.com/reflect?github=tyrcho/openshift-cartridge-play2&commit=play-2.3.0
+
+```
+git remote add oo ssh://caffecaffe@host-domain.rhcloud.com/~/git/host.git/
+git push oo master --force
+
+```
