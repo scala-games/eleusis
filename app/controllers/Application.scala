@@ -6,6 +6,7 @@ import play.api.libs.json.JsValue
 
 import play.api.libs.json._
 import play.api.libs.iteratee._
+import play.api.Play.current
 
 import models._
 
@@ -35,10 +36,9 @@ object Application extends Controller {
   /**
    * Handles the chat websocket.
    */
-  def chat(username: String) = WebSocket.async[JsValue] { request => null
-
-    //      ChatRoom.join(username)
-
+  def chat(username: String) = WebSocket.acceptWithActor[String, String] { request =>
+    out =>
+      ChatRoom.props(out, username)
   }
 
 }

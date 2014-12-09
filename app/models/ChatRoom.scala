@@ -1,104 +1,88 @@
 package models
 
-import akka.actor._
 import scala.concurrent.duration.DurationInt
-import play.api._
-import play.api.libs.json._
-import play.api.libs.iteratee._
-import play.api.libs.concurrent._
+import akka.actor.Actor
+import akka.actor.ActorRef
+import akka.actor.Props
+import akka.actor.actorRef2Scala
 import akka.util.Timeout
-import akka.pattern.ask
-import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.Play.current
-import scala.concurrent.Promise
-import scala.collection.mutable.ListBuffer
+import play.api.libs.concurrent.Akka
+import play.api.libs.json.JsArray
+import play.api.libs.json.JsObject
+import play.api.libs.json.JsString
+import scala.concurrent.ExecutionContext.Implicits.global
+import play.Logger
 
 object ChatRoom {
 
   implicit val timeout = Timeout(1 second)
 
+  def props(out: ActorRef, username: String) = Props(new UserActor(out, username))
+
   lazy val default = {
     val roomActor = Akka.system.actorOf(Props[ChatRoom])
-
     // Create a bot user (just for fun)
     Robot(roomActor)
-
     roomActor
   }
-
-  //  def join(username: String) = {
-  //    (default ? Join(username)).map {
-  //
-  //      case Connected(enumerator) =>
-  //
-  //        // Create an Iteratee to consume the feed
-  //        val iteratee = Iteratee.foreach[JsValue] { event =>
-  //          default ! Talk(username, (event \ "text").as[String])
-  //        }.mapDone { _ =>
-  //          default ! Quit(username)
-  //        }
-  //
-  //        (iteratee, enumerator)
-  //
-  //      case CannotConnect(error) =>
-  //
-  //        // Connection error
-  //
-  //        // A finished Iteratee sending EOF
-  //        val iteratee = Done[JsValue, Unit]((), Input.EOF)
-  //
-  //        // Send an error and close the socket
-  //        val enumerator = Enumerator[JsValue](JsObject(Seq("error" -> JsString(error)))).andThen(Enumerator.enumInput(Input.EOF))
-  //
-  //        (iteratee, enumerator)
-  //
-  //    }
-  //
-  //  }
-
 }
 
-class ChatRoom(out: ActorRef) extends Actor {
-  var members = Set.empty[String]
+class UserActor(out: ActorRef, username: String) extends Actor {
+  ChatRoom.default ! Join(username)
+
+  def receive = {
+    case CannotConnect(msg) =>
+      out ! JsObject(Seq("error" -> JsString(msg)))
+
+    case j: JsObject =>
+      out ! j
+  }
+}
+
+class ChatRoom extends Actor {
+  var members = Map.empty[String, ActorRef]
+
+  val logger = Logger.of("application.ChatRoom")
 
   def receive = {
 
-    case Join(username) => {
+    case Join(username) =>
+      logger.info(s"$username wants to join")
       if (members.contains(username)) {
-        out ! CannotConnect(s"$username is already used")
+        sender ! CannotConnect(s"$username is already used")
       } else {
-        members = members + username
-
-        out ! Connected(username)
+        members += username -> sender
+        self ! NotifyJoin(username)
+        //        sender ! Connected(username)
       }
-    }
 
-    case NotifyJoin(username) => {
+    case NotifyJoin(username) =>
       notifyAll("join", username, "has entered the room")
-    }
 
-    case Talk(username, text) => {
+    case Talk(username, text) =>
       notifyAll("talk", username, text)
-    }
 
-    case Quit(username) => {
-      members = members - username
+    case Quit(username) =>
+      members -= username
       notifyAll("quit", username, "has leaved the room")
-    }
 
   }
 
   def notifyAll(kind: String, user: String, text: String) {
-    //    val msg = JsObject(
-    //      Seq(
-    //        "kind" -> JsString(kind),
-    //        "user" -> JsString(user),
-    //        "message" -> JsString(text),
-    //        "members" -> JsArray(
-    //          members.keySet.toList.map(JsString))))
-    //    members.foreach {
-    //      case (_, channel) => channel.push(msg)
-    //    }
+    val msg = JsObject(
+      Seq(
+        "kind" -> JsString(kind),
+        "user" -> JsString(user),
+        "message" -> JsString(text),
+        "members" -> JsArray(
+          members.keySet.toList.map(JsString))))
+
+    logger.info(s"broadcast $msg")
+
+    members.foreach {
+      case (_, a) => a ! msg
+    }
   }
 
 }

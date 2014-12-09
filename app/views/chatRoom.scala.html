@@ -31,7 +31,7 @@
             
 			var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket
             var chatSocket = new WS("@routes.Application.chat(username).webSocketURL()")
-            
+            $("#onChat").show() // TODO remove this when it works
             var sendMessage = function() {
                 chatSocket.send(JSON.stringify(
                     {text: $("#talk").val()}
