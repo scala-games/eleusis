@@ -1,21 +1,13 @@
 package models
 
 import scala.concurrent.duration.DurationInt
-import akka.actor.Actor
-import akka.actor.ActorRef
-import akka.actor.Props
-import akka.actor.actorRef2Scala
+
+import akka.actor.{Actor, ActorRef, Props, actorRef2Scala}
 import akka.util.Timeout
+import play.Logger
 import play.api.Play.current
 import play.api.libs.concurrent.Akka
-import play.api.libs.json.JsArray
-import play.api.libs.json.JsObject
-import play.api.libs.json.JsString
-import scala.concurrent.ExecutionContext.Implicits.global
-import play.Logger
-import play.api.libs.json.JsObject
-import akka.actor.PoisonPill
-import play.api.libs.json.Json
+import play.api.libs.json.{JsArray, JsObject, JsString}
 
 object ChatRoom {
 
@@ -23,40 +15,12 @@ object ChatRoom {
 
   def props(out: ActorRef, username: String) = Props(new UserActor(out, username))
 
-  lazy val default = {
-    val roomActor = Akka.system.actorOf(Props[ChatRoom])
-    Akka.system.actorOf(Props(new GameRobot(roomActor)))
-    roomActor
-  }
-}
-
-class UserActor(out: ActorRef, username: String) extends Actor {
-  val logger = Logger.of(s"application.UserActor.$username")
-  ChatRoom.default ! Join(username)
-
-  def receive = {
-    case CannotConnect(msg) =>
-      logger.error(s"cannot connect:$msg")
-      out ! JsObject(Seq("error" -> JsString(msg)))
-
-    case Message(msg) =>
-      logger.info(s"sending message : $msg")
-      out ! Json.stringify(msg)
-
-    case s: String =>
-      logger.info(s"user said: $s")
-      val text = (Json.parse(s) \ "text")
-      ChatRoom.default ! Talk(username, text.as[String])
-  }
-
-  override def postStop(): Unit = {
-    ChatRoom.default ! Quit(username)
-    logger.info("left")
-  }
+  lazy val default = Akka.system.actorOf(Props[ChatRoom])
 }
 
 class ChatRoom extends Actor {
   var members = Map.empty[String, ActorRef]
+  val robot = Akka.system.actorOf(Props(new GameRobot(self)))
 
   val logger = Logger.of("application.ChatRoom")
 
@@ -69,13 +33,13 @@ class ChatRoom extends Actor {
       } else {
         members += username -> sender
         self ! NotifyJoin(username)
-        //        sender ! Connected(username)
       }
 
     case NotifyJoin(username) =>
       notifyAll("join", username, "has entered the room")
 
     case Talk(username, text) =>
+      robot ! text
       notifyAll("talk", username, text)
 
     case Quit(username) =>
