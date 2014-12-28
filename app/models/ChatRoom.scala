@@ -42,7 +42,7 @@ class UserActor(out: ActorRef, username: String) extends Actor {
 
     case Message(msg) =>
       logger.info(s"sending message : $msg")
-      out ! msg
+      out ! Json.stringify(msg)
 
     case s: String =>
       logger.info(s"user said: $s")

@@ -42,7 +42,6 @@
             
             var receiveEvent = function(event) {
                 var data = JSON.parse(event.data)
-                alert(data)
                 // Handle errors
                 if(data.error) {
                     chatSocket.close()
