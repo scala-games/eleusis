@@ -7,15 +7,16 @@ Add it to your path
 ```
 git clone https://github.com/scala-games/eleusis.git
 cd eleusis
-activator eclipse
-activator idea
+activator
+  eclipse with-source=true
+  idea
 ```
 
 # Run locally
 
 ```
 cd eleusis
-activator run
+activator -jvm-debug 9999 ~run
 ```
 
 
