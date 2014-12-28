@@ -25,8 +25,7 @@ object ChatRoom {
 
   lazy val default = {
     val roomActor = Akka.system.actorOf(Props[ChatRoom])
-    // Create a bot user (just for fun)
-    //    Robot(roomActor)
+    Akka.system.actorOf(Props(new GameRobot(roomActor)))
     roomActor
   }
 }
@@ -112,17 +111,3 @@ case class Message(msg: JsObject)
 
 case class Connected(username: String)
 case class CannotConnect(msg: String)
-
-object Robot {
-
-  def apply(chatRoom: ActorRef) {
-
-    // Make the robot talk every 30 seconds
-    Akka.system.scheduler.schedule(
-      30 seconds,
-      30 seconds,
-      chatRoom,
-      Talk("Robot", "I'm still alive"))
-  }
-
-}
