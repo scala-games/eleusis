@@ -4,6 +4,8 @@ import scala.util.Random
 
 case class Card(suit: Suit.Value, rank: Rank.Value) {
   override def toString = s"$rank$suit"
+
+  def color: Color.Value = suit.color
 }
 
 object Cards {
@@ -17,10 +19,22 @@ object Cards {
 }
 
 object Suit extends Enumeration {
+  import Color._
   val HEARTS = Value("♥")
   val SPADES = Value("♤")
   val DIAMONDS = Value("♦")
   val CLUBS = Value("♧")
+
+  implicit class SuitValue(suit: Value) {
+    def color: Color.Value = suit match {
+      case CLUBS | SPADES => BLACK
+      case _ => RED
+    }
+  }
+}
+
+object Color extends Enumeration {
+  val RED, BLACK = Value
 }
 
 object Rank extends Enumeration {

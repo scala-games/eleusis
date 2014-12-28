@@ -2,12 +2,12 @@ package models
 
 import scala.concurrent.duration.DurationInt
 
-import akka.actor.{Actor, ActorRef, Props, actorRef2Scala}
+import akka.actor.{ Actor, ActorRef, Props, actorRef2Scala }
 import akka.util.Timeout
 import play.Logger
 import play.api.Play.current
 import play.api.libs.concurrent.Akka
-import play.api.libs.json.{JsArray, JsObject, JsString}
+import play.api.libs.json.{ JsArray, JsObject, JsString }
 
 object ChatRoom {
 
@@ -39,13 +39,19 @@ class ChatRoom extends Actor {
       notifyAll("join", username, "has entered the room")
 
     case Talk(username, text) =>
-      robot ! text
       notifyAll("talk", username, text)
+      handleRobotCommands(username, text)
 
     case Quit(username) =>
       members -= username
-      notifyAll("quit", username, "has leaved the room")
+      notifyAll("quit", username, "has left the room")
 
+  }
+
+  private def handleRobotCommands(username: String, text: String): Unit = text match {
+    case "start" => robot ! Start(members.keys.toList)
+    case "stop" => robot ! Stop
+    case _ =>
   }
 
   def notifyAll(kind: String, user: String, text: String) {
@@ -54,13 +60,12 @@ class ChatRoom extends Actor {
         "kind" -> JsString(kind),
         "user" -> JsString(user),
         "message" -> JsString(text),
-        "members" -> JsArray(
-          members.keySet.toList.map(JsString))))
+        "members" -> JsArray(members.keySet.toList.map(JsString))))
 
     logger.info(s"broadcast $msg")
 
-    members.foreach {
-      case (_, a) => a ! Message(msg)
+    for (m <- members.values) {
+      m ! Message(msg)
     }
   }
 
