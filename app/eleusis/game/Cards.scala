@@ -9,6 +9,14 @@ case class Card(suit: Suit.Value, rank: Rank.Value) {
 }
 
 object Cards {
+  def apply(cardsString: String): List[Card] =
+    for {
+      cs <- cardsString.split(" ").toList
+      Seq(r, s) = cs.toList
+      rank = Rank.withName(r)
+      suit = Suit.withName(s)
+    } yield Card(suit, rank)
+
   lazy val deck: Set[Card] = for {
     s <- Suit.values
     r <- Rank.values
@@ -24,6 +32,14 @@ object Suit extends Enumeration {
   val SPADES = Value("♤")
   val DIAMONDS = Value("♦")
   val CLUBS = Value("♧")
+
+  def withName(s: Char): Suit.Value = s match {
+    case 'h' | 'H' => withName(HEARTS.toString)
+    case 's' | 'S' => withName(SPADES.toString)
+    case 'd' | 'D' => withName(DIAMONDS.toString)
+    case 'c' | 'C' => withName(CLUBS.toString)
+    case _ => withName(s.toString)
+  }
 
   implicit class SuitValue(suit: Value) {
     def color: Color.Value = suit match {
@@ -51,4 +67,9 @@ object Rank extends Enumeration {
   val JACK = Value("J")
   val QUEEN = Value("Q")
   val KING = Value("K")
+
+  def withName(s: Char): Rank.Value = s match {
+    case '1' => withName("A")
+    case _ => withName(s.toString)
+  }
 }

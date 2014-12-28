@@ -48,9 +48,19 @@ class ChatRoom extends Actor {
 
   }
 
+  val playRe = "play (.*)".r
+
   private def handleRobotCommands(username: String, text: String): Unit = text match {
-    case "start" => robot ! Start(members.keys.toList)
-    case "stop" => robot ! Stop
+    case "start" =>
+      robot ! Start(members.keys.toList)
+      robot ! Status
+    case "stop" =>
+      robot ! Stop
+    case "status" =>
+      robot ! Status
+    case playRe(cards) =>
+      robot ! Play(username, cards)
+      robot ! Status
     case _ =>
   }
 

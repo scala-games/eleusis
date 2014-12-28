@@ -25,12 +25,26 @@ class GameRobot(chatRoom: ActorRef) extends Actor {
         case Some(s) => chatRoom ! Talk("robot", "game is already started")
         case None =>
           gameState = Some(GameState(players))
-          chatRoom ! Talk("robot", gameState.toString)
       }
-    case Stop => gameState = None
+    case Stop =>
+      gameState = None
+    case Status =>
+      chatRoom ! Talk("robot", gameState.toString)
+    case Play(username, cardsString) =>
+      gameState match {
+        case Some(s) =>
+          val cards = Cards(cardsString).take(4) // TODO : check cards are actually in hand
+          gameState = Some(s.play(username, cards: _*))
+        case None =>
+          chatRoom ! Talk("robot", "game is not started")
+      }
+
   }
 }
 
 case class Start(players: List[String])
 
 case object Stop
+case object Status
+
+case class Play(username: String, cards: String)

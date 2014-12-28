@@ -13,22 +13,23 @@ case class GameState(
   lazy val acceptedCards: List[Card] = turns.map(_.accepted)
 
   def accepts(cards: Card*): Boolean =
-    rule(cards.toList ::: acceptedCards)
+    rule(cards.toList.reverse ::: acceptedCards)
 
-  def play(cards: Card*): GameState =
-    if (accepts(cards: _*))
-      copy(turns = cards.toList.map(Turn(_)) ::: turns)
+  def play(name: String, cards: Card*): GameState =
+    (if (accepts(cards: _*))
+      copy(turns = cards.toList.reverse.map(Turn(_)) ::: turns)
     else
-      copy(turns = turns.head.reject(cards: _*) :: turns.tail)
+      copy(turns = turns.head.reject(cards: _*) :: turns.tail).dealCards(name, cards.size * 2)).
+      updatePlayer(name, _.remove(cards: _*))
 
-  def dealCards(player: Player, count: Int): GameState = {
+  def dealCards(player: String, count: Int): GameState = {
     val cards = deck.take(count)
     updatePlayer(player, p => p.copy(hand = p.hand ::: cards)).
       copy(deck = deck.drop(count))
   }
 
-  def updatePlayer(id: Player, update: Player => Player): GameState = {
-    val (List(player), others) = players.partition(_.name == id.name)
+  def updatePlayer(id: String, update: Player => Player): GameState = {
+    val (List(player), others) = players.partition(_.name == id)
     copy(players = update(player) :: others)
   }
 }
@@ -50,9 +51,9 @@ object GameState {
     val players = names.map(Player(_))
     val Some(firstCard) = deck.find(c => rule(List(c))).orElse(throw new RuntimeException("Could not find initial card for rule"))
     val turn0 = Turn(firstCard)
-    var state = GameState(players, rule, List(turn0), deck) // TODO: remove initial card from deck
+    var state = GameState(players, rule, List(turn0), deck.diff(List(firstCard)))
     for (p <- players) {
-      state = state.dealCards(p, initialHand)
+      state = state.dealCards(p.name, initialHand)
     }
     state
   }
@@ -66,4 +67,7 @@ case class Turn(accepted: Card, rejectedAfter: List[List[Card]] = Nil) {
 case class Player(
   name: String,
   hand: List[Card] = Nil,
-  prophetStartTurn: Option[Int] = None)
+  prophetStartTurn: Option[Int] = None) {
+
+  def remove(cards: Card*): Player = copy(hand = hand.diff(cards))
+}
