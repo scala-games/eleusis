@@ -29,3 +29,11 @@ git remote add oo ssh://caffecaffe@host-domain.rhcloud.com/~/git/host.git/
 git push oo master --force
 
 ```
+
+# Rules of Eleusis
+
+## French
+http://regle.jeuxsoc.fr/eleus_rg.pdf
+
+## English
+https://docs.google.com/document/d/19_p1W7m9CwI5jpiQt3m_J0rn_j2TOPjD96nJ2eSzKkE/edit?usp=sharing
