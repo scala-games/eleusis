@@ -3,16 +3,16 @@ package controllers
 import play.api._
 import play.api.mvc._
 import play.api.libs.json.JsValue
-
 import play.api.libs.json._
 import play.api.libs.iteratee._
-import play.api.Play.current
-
 import models._
-
 import akka.actor._
+import play.api.mvc._
+import play.api.libs.streams._
+import javax.inject.Inject
+import akka.stream.Materializer
 
-object Application extends Controller {
+class Application @Inject() (implicit system: ActorSystem, materializer: Materializer) extends Controller {
 
   /**
    * Just display the home page.
@@ -36,9 +36,8 @@ object Application extends Controller {
   /**
    * Handles the chat websocket.
    */
-  def chat(username: String) = WebSocket.acceptWithActor[String, String] { request =>
-    out =>
-      ChatRoom.props(out, username)
+  def chat(username: String) = WebSocket.accept[String, String] { request =>
+    ActorFlow.actorRef(out => ChatRoom.props(out, username))
   }
 
 }
