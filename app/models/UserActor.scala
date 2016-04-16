@@ -1,12 +1,17 @@
 package models
 
-import akka.actor.{Actor, ActorRef, actorRef2Scala}
+import akka.actor.Actor
+import akka.actor.ActorRef
+import akka.actor.actorRef2Scala
 import play.Logger
-import play.api.libs.json.{JsObject, JsString, Json}
+import play.api.libs.json.JsObject
+import play.api.libs.json.JsString
+import play.api.libs.json.JsValue.jsValueToJsLookup
+import play.api.libs.json.Json
 
-class UserActor(out: ActorRef, username: String) extends Actor {
+class UserActor(chatRoom: ActorRef, out: ActorRef, username: String) extends Actor {
   val logger = Logger.of(s"application.UserActor.$username")
-  ChatRoom.default ! Join(username)
+  chatRoom ! Join(username)
 
   def receive = {
     case CannotConnect(msg) =>
@@ -20,11 +25,11 @@ class UserActor(out: ActorRef, username: String) extends Actor {
     case s: String =>
       logger.info(s"user said: $s")
       val text = (Json.parse(s) \ "text")
-      ChatRoom.default ! Talk(username, text.as[String])
+      chatRoom ! Talk(username, text.as[String])
   }
 
   override def postStop(): Unit = {
-    ChatRoom.default ! Quit(username)
+    chatRoom ! Quit(username)
     logger.info("left")
   }
 }

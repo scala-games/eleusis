@@ -9,18 +9,9 @@ import play.api.Play.current
 import play.api.libs.concurrent.Akka
 import play.api.libs.json.{ JsArray, JsObject, JsString }
 
-object ChatRoom {
-
-  implicit val timeout = Timeout(1 second)
-
-  def props(out: ActorRef, username: String) = Props(new UserActor(out, username))
-
-  lazy val default = Akka.system.actorOf(Props[ChatRoom])
-}
-
 class ChatRoom extends Actor {
   var members = Map.empty[String, ActorRef]
-  val robot = Akka.system.actorOf(Props(new GameRobot(self)))
+  val robot = context.system.actorOf(Props(new GameRobot(self)))
 
   val logger = Logger.of("application.ChatRoom")
 
@@ -78,6 +69,8 @@ class ChatRoom extends Actor {
       m ! Message(msg)
     }
   }
+
+ 
 
 }
 

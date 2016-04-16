@@ -25,8 +25,8 @@ class Application @Inject() (implicit system: ActorSystem, materializer: Materia
    * Display the chat room page.
    */
   def chatRoom(username: Option[String]) = Action { implicit request =>
-    username.filterNot(_.isEmpty).map { username =>
-      Ok(views.html.chatRoom(username))
+    username.map { u =>
+      Ok(views.html.chatRoom(u))
     }.getOrElse {
       Redirect(routes.Application.index).flashing(
         "error" -> "Please choose a valid username.")
@@ -37,7 +37,9 @@ class Application @Inject() (implicit system: ActorSystem, materializer: Materia
    * Handles the chat websocket.
    */
   def chat(username: String) = WebSocket.accept[String, String] { request =>
-    ActorFlow.actorRef(out => ChatRoom.props(out, username))
+    ActorFlow.actorRef(out => Props(new UserActor(chatRoom, out, username)))
   }
+
+  val chatRoom = system.actorOf(Props[ChatRoom], "chatroom")
 
 }

@@ -2,10 +2,10 @@ package models
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
-import akka.actor.{ Actor, ActorRef }
+
+import akka.actor.Actor
+import akka.actor.ActorRef
 import akka.actor.actorRef2Scala
-import play.api.Play.current
-import play.api.libs.concurrent.Akka
 import eleusis.game.Cards
 import eleusis.game.GameState
 
@@ -13,7 +13,7 @@ class GameRobot(chatRoom: ActorRef) extends Actor {
   var gameState: Option[GameState] = None
 
   // Make the robot talk every 30 seconds
-  Akka.system.scheduler.schedule(
+  context.system.scheduler.schedule(
     30 seconds,
     30 seconds,
     chatRoom,
