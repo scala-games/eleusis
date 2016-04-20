@@ -18,7 +18,12 @@ class UserActor(chatRoom: ActorRef, out: ActorRef, username: String) extends Act
       out ! Json(msg).toString
 
     case msg: Message =>
-      val str = rapture.json.Json(msg).toString
+      val str = Json(msg).toString
+      logger.info(s"sending message : $str")
+      out ! str
+
+    case msg: HandMessage =>
+      val str = Json(msg).toString
       logger.info(s"sending message : $str")
       out ! str
 

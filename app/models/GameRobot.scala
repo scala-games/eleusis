@@ -30,12 +30,14 @@ class GameRobot(chatRoom: ActorRef) extends Actor {
       gameState = None
     case Status(username) =>
       val msg = gameState match {
-        case Some(state) => state.players.collect {
-          case p: Player if p.name == username => p.hand
-        }.head.toString
-        case None => "not started"
+        case Some(state) =>
+          val hand = state.players.collect {
+            case p: Player if p.name == username => p.hand
+          }.head
+          HandMessage(hand.map(_.toCardString), username)
+        case None => CannotConnect("game not started")
       }
-      chatRoom ! Talk("robot", msg)
+      chatRoom ! msg
 
     case Play(username, cardsString) =>
       gameState match {

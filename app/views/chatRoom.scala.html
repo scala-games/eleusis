@@ -83,19 +83,28 @@
                     $("#onChat").show()
                 }
                 
-                // Create the message element
-                var el = $('<div class="message"><span></span><p></p></div>')
-                $("span", el).text(data.user)
-                $("p", el).text(data.message)
-                $(el).addClass(data.kind)
-                if(data.user == '@username') $(el).addClass('me')
-                $('#messages').append(el)
-                
-                // Update the members list
-                $("#members").html('') 
-                $(data.members).each(function() {
-                    $("#members").append('<li>' + this + '</li>')
-                })
+                if(data.message) {
+	                // Create the message element
+	                var el = $('<div class="message"><span></span><p></p></div>')
+	                $("span", el).text(data.user)
+	                $("p", el).text(data.message)
+	                $(el).addClass(data.kind)
+	                if(data.user == '@username') $(el).addClass('me')
+	                $('#messages').append(el)
+	                
+	                // Update the members list
+	                $("#members").html('') 
+	                $(data.members).each(function() {
+	                    $("#members").append('<li>' + this + '</li>')
+	                })
+                }
+                if(data.kind == "hand") {
+                   	hand = new Stack();
+                   	data.cards.forEach(function(card) {
+						hand.addCard(new Card(card.rank, card.suit))
+					});
+		  			display(hand);
+                }
             }
             
             var handleReturnKey = function(e) {

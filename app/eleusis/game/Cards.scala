@@ -2,11 +2,15 @@ package eleusis.game
 
 import scala.util.Random
 
-case class Card(suit: Suit.Value, rank: Rank.Value) {
+case class Card(suit: Suit, rank: Rank.Value) {
   override def toString = s"$rank$suit"
 
   def color: Color.Value = suit.color
+
+  def toCardString = CardString(suit.name, rank.toString)
 }
+
+case class CardString(suit: String, rank: String)
 
 object Cards {
   def apply(cardsString: String): List[Card] =
@@ -14,39 +18,27 @@ object Cards {
       cs <- cardsString.split(" ").toList
       Seq(r, s) = cs.toList
       rank = Rank.withName(r)
-      suit = Suit.withName(s)
+      suit <- Suit.withName(s.toString)
     } yield Card(suit, rank)
 
-  lazy val deck: Set[Card] = for {
-    s <- Suit.values
+  lazy val deck: Set[Card] = (for {
+    s <- Suit.all
     r <- Rank.values
-  } yield Card(s, r)
+  } yield Card(s, r)).toSet
 
   def shuffledDecks(count: Int): List[Card] =
     Random.shuffle(List.fill(count)(deck.toList).flatten)
 }
 
-object Suit extends Enumeration {
-  import Color._
-  val HEARTS = Value("♥")
-  val SPADES = Value("♤")
-  val DIAMONDS = Value("♦")
-  val CLUBS = Value("♧")
+case class Suit(name: String, symbol: String, color: Color.Value)
 
-  def withName(s: Char): Suit.Value = s match {
-    case 'h' | 'H' => withName(HEARTS.toString)
-    case 's' | 'S' => withName(SPADES.toString)
-    case 'd' | 'D' => withName(DIAMONDS.toString)
-    case 'c' | 'C' => withName(CLUBS.toString)
-    case _ => withName(s.toString)
-  }
-
-  implicit class SuitValue(suit: Value) {
-    def color: Color.Value = suit match {
-      case CLUBS | SPADES => BLACK
-      case _ => RED
-    }
-  }
+object Suit {
+  val HEARTS = Suit("h", "♥", Color.RED)
+  val SPADES = Suit("s", "♤", Color.BLACK)
+  val DIAMONDS = Suit("d", "♦", Color.RED)
+  val CLUBS = Suit("c", "♧", Color.BLACK)
+  val all = Seq(HEARTS, SPADES, DIAMONDS, CLUBS)
+  def withName(n: String) = all.find(_.name == n)
 }
 
 object Color extends Enumeration {
@@ -70,6 +62,6 @@ object Rank extends Enumeration {
 
   def withName(s: Char): Rank.Value = s match {
     case '1' => withName("A")
-    case _ => withName(s.toString)
+    case _   => withName(s.toString)
   }
 }
