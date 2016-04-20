@@ -2,12 +2,12 @@ package models
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
-
 import akka.actor.Actor
 import akka.actor.ActorRef
 import akka.actor.actorRef2Scala
 import eleusis.game.Cards
 import eleusis.game.GameState
+import eleusis.game.Player
 
 class GameRobot(chatRoom: ActorRef) extends Actor {
   var gameState: Option[GameState] = None
@@ -28,8 +28,15 @@ class GameRobot(chatRoom: ActorRef) extends Actor {
       }
     case Stop =>
       gameState = None
-    case Status =>
-      chatRoom ! Talk("robot", gameState.toString)
+    case Status(username) =>
+      val msg = gameState match {
+        case Some(state) => state.players.collect {
+          case p: Player if p.name == username => p.hand
+        }.head.toString
+        case None => "not started"
+      }
+      chatRoom ! Talk("robot", msg)
+
     case Play(username, cardsString) =>
       gameState match {
         case Some(s) =>
@@ -45,6 +52,6 @@ class GameRobot(chatRoom: ActorRef) extends Actor {
 case class Start(players: List[String])
 
 case object Stop
-case object Status
+case class Status(username: String)
 
 case class Play(username: String, cards: String)

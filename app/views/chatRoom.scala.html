@@ -29,7 +29,6 @@
     
     <script type="text/javascript" charset="utf-8">
     
-    var hand;
 
 		window.onload = init;
 		
@@ -39,11 +38,11 @@
 		  hand.addCard(new Card("K","D"));
 		  hand.addCard(new Card("A","H"));
 		
-		  display();
+		  display(hand);
 		}
 		
 		
-		function display() {
+		function display(hand) {
 		
 		  var el, top, left;
 		  var n;

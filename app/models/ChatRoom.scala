@@ -44,11 +44,11 @@ class ChatRoom extends Actor {
   private def handleRobotCommands(username: String, text: String): Unit = text match {
     case "start" =>
       robot ! Start(members.keys.toList)
-      robot ! Status
+      robot ! Status(username)
     case "stop" =>
       robot ! Stop
     case "status" =>
-      robot ! Status
+      robot ! Status(username)
     case playRe(cards) =>
       robot ! Play(username, cards)
       robot ! Status
