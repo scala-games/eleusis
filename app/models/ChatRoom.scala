@@ -5,9 +5,7 @@ import scala.concurrent.duration.DurationInt
 import akka.actor.{ Actor, ActorRef, Props, actorRef2Scala }
 import akka.util.Timeout
 import play.Logger
-import play.api.Play.current
 import play.api.libs.concurrent.Akka
-import play.api.libs.json.{ JsArray, JsObject, JsString }
 
 class ChatRoom extends Actor {
   var members = Map.empty[String, ActorRef]
@@ -56,17 +54,12 @@ class ChatRoom extends Actor {
   }
 
   def notifyAll(kind: String, user: String, text: String) {
-    val msg = JsObject(
-      Seq(
-        "kind" -> JsString(kind),
-        "user" -> JsString(user),
-        "message" -> JsString(text),
-        "members" -> JsArray(members.keySet.toList.map(JsString))))
+    val msg = Message(kind,user,text,members.keySet)
 
     logger.info(s"broadcast $msg")
 
     for (m <- members.values) {
-      m ! Message(msg)
+      m ! msg
     }
   }
 
@@ -79,7 +72,8 @@ case class Quit(username: String)
 case class Talk(username: String, text: String)
 case class NotifyJoin(username: String)
 
-case class Message(msg: JsObject)
+case class Message(kind:String, user:String, message:String, members:Set[String]) 
+//case class HandMessage(kind:String, cards:List[String])
 
 case class Connected(username: String)
-case class CannotConnect(msg: String)
+case class CannotConnect(error: String)

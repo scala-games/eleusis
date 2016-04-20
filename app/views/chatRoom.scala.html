@@ -71,6 +71,7 @@
             }
             
             var receiveEvent = function(event) {
+            	//alert(event.data)
                 var data = JSON.parse(event.data)
                 // Handle errors
                 if(data.error) {

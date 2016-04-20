@@ -8,5 +8,7 @@ scalaVersion := "2.11.6"
 
 libraryDependencies ++= Seq(
   cache,
-  ws
+  ws		
 )
+
+libraryDependencies += "com.propensive" %% "rapture-json-jawn" % "1.1.0"
