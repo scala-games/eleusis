@@ -25,38 +25,14 @@
         </div>
     </div>
 
-	<div id="hand" class="row"/>
+	<div id="hand" class="row">
+		<div class="card Ahearts"></div>
+		<div class="card Aclubs"></div>
+	</div>
     
     <script type="text/javascript" charset="utf-8">
     
 
-		window.onload = init;
-		
-		function init() {
-		 
-		  hand = new Stack();
-		  hand.addCard(new Card("K","D"));
-		  hand.addCard(new Card("A","H"));
-		
-		  display(hand);
-		}
-		
-		
-		function display(hand) {
-		
-		  var el, top, left;
-		  var n;
-		
-		  el = document.getElementById("hand");
-		  while (el.firstChild != null)
-		    el.removeChild(el.firstChild);
-		  for (i = 0; i < hand.cardCount(); i++) {
-		    node = hand.cards[i].createNode();
-		    el.appendChild(node);
-		  }
-		
-		}
-    
         $(function() {
             
 			var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket
@@ -99,11 +75,7 @@
 	                })
                 }
                 if(data.kind == "hand") {
-                   	hand = new Stack();
-                   	data.cards.forEach(function(card) {
-						hand.addCard(new Card(card.rank, card.suit))
-					});
-		  			display(hand);
+                   
                 }
             }
             
