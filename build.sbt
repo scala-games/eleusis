@@ -13,4 +13,4 @@ libraryDependencies ++= Seq(
 
 libraryDependencies += "com.propensive" %% "rapture-json-jawn" % "1.1.0"
 
-includeFilter in (Assets, LessKeys.less) := "cards.less" | "cards.less"
+includeFilter in (Assets, LessKeys.less) := "cards.less" 

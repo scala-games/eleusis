@@ -1,18 +1,32 @@
+@cardWidth: 280px;
+@aceX: -500px;
+
+@cardHeight: 375px;
+@clubsY: -1166px;
+
+@suits: Clubs, Hearts, Spades, Diamonds;
+@ranks: Ace, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King;
+
+.makeSuit(@s, @r: length(@ranks)) when (@r >0) {
+	.makeSuit(@s, @r - 1);
+    @suit: extract(@suits, @s); 
+    @rank: extract(@ranks, @r); 
+    .@{rank}.@{suit} {
+        background-position: (@aceX - (@r - 1) * @cardWidth) (@clubsY - (@s - 1) * @cardHeight);
+    }
+}
+
+.makeSuits(@s: length(@suits)) when (@s > 0) {
+    .makeSuit(@s);
+    .makeSuits(@s - 1);
+}
+
+.makeSuits(); 
+
 .card {
-  display: inline-block;
   height: 335px;
   width: 240px;
-  background-image: url(https://cdn.rawgit.com/tyrcho/fa8bec7cc670515cd250a9dcfad5898f/raw/2d6bb400ab12bf785a29ba06202cbec789617801/Color_52_Faces_v.2.0.svg);
-}
-.Aclubs {
-  background-position: -500px -1166px;
-}
-.Ahearts {
-  background-position: -500px -1541px;
-}
-.TwoHearts {
-  background-position: -781px -1541px;
-}
-.ThreeHearts {
-  background-position: -1062px -1541px;
+  zoom: 0.4;
+  margin-right: -100px;
+  background-image: url(/assets/images/AllCards.svg);
 }
